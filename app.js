@@ -1435,6 +1435,8 @@ function openAccountWizard() {
   const fsd = document.getElementById('wizardFolderSharedDone'); if (fsd) fsd.checked = false;
   const copyBox = document.getElementById('wizardCopyBox'); if (copyBox) copyBox.classList.add('hidden');
   const copyStatus = document.getElementById('wizardCopyStatus'); if (copyStatus) copyStatus.textContent = '';
+  const quickName = document.getElementById('wizardQuickFolderName'); if (quickName) quickName.value = 'Phim';
+  const quickStatus = document.getElementById('wizardQuickStatus'); if (quickStatus) quickStatus.textContent = '';
   wizardStep5Next.disabled = true;
   wizardShowStep(1);
   accountWizard.classList.remove('hidden');
@@ -1458,6 +1460,10 @@ document.getElementById('wizardStep1Next')?.addEventListener('click', function()
   accountWizardData.googleAccount = email;
   wizardAccountLabel.textContent = email;
   wizardFolderAccountLabel.textContent = email;
+  ['wizardTestUserAccountLabel', 'wizardTestUserAccountLabel2', 'wizardQuickAccountLabel', 'wizardQuickAccountLabel2'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = email;
+  });
   wizardShowStep(2);
 });
 
@@ -1502,6 +1508,16 @@ document.getElementById('wizardOpenDriveBtn')?.addEventListener('click', functio
   window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener,noreferrer');
 });
 
+document.getElementById('wizardOpenConsentBtn')?.addEventListener('click', function() {
+  // Số project được lấy từ chính OAUTH_CLIENT_ID (phần trước dấu "-") để
+  // Google Cloud Console tự mở đúng project sở hữu OAuth client này.
+  const projectNumber = (OAUTH_CLIENT_ID.split('-')[0] || '').trim();
+  const url = projectNumber
+    ? 'https://console.cloud.google.com/apis/credentials/consent?project=' + encodeURIComponent(projectNumber)
+    : 'https://console.cloud.google.com/apis/credentials/consent';
+  window.open(url, '_blank', 'noopener,noreferrer');
+});
+
 document.getElementById('wizardCheckFolderBtn')?.addEventListener('click', async function() {
   if (!document.getElementById('wizardFolderCreatedDone').checked) {
     wizardFolderStatus.textContent = '⚠ Hãy xác nhận bạn đã tạo folder mới trên Drive.';
@@ -1538,6 +1554,79 @@ document.getElementById('wizardCheckFolderBtn')?.addEventListener('click', async
     if (copyBox) { copyBox.classList.remove('hidden'); populateFolderSyncSelects(); }
   } catch (err) {
     wizardFolderStatus.textContent = '✗ Không quét được folder: ' + (err?.message || String(err));
+  }
+});
+
+document.getElementById('wizardQuickAutoBtn')?.addEventListener('click', async function () {
+  const statusEl = document.getElementById('wizardQuickStatus');
+  const nameInput = document.getElementById('wizardQuickFolderName');
+  const srcSel = document.getElementById('wizardQuickSourceSelect');
+  const accounts = getAccounts();
+  const sourceIdx = srcSel ? Number(srcSel.value) : NaN;
+  const hasSource = Number.isInteger(sourceIdx) && !!accounts[sourceIdx];
+
+  if (!accountWizardData.apiKey) {
+    if (statusEl) statusEl.textContent = '⚠ Hãy hoàn tất bước 4 (API Key) trước khi dùng cách nhanh này.';
+    return;
+  }
+  const label = wizardAccountLabelInput.value.trim();
+  if (!label) {
+    if (statusEl) statusEl.textContent = '⚠ Hãy nhập "Tên hiển thị" ở ô bên dưới (phần thủ công) trước, rồi bấm lại nút này.';
+    wizardAccountLabelInput.focus();
+    return;
+  }
+  const folderName = nameInput.value.trim() || 'Phim';
+
+  this.disabled = true;
+  try {
+    statusEl.textContent = '⏳ Đang mở màn hình đăng nhập - hãy chọn đúng tài khoản MỚI (' + accountWizardData.googleAccount + ')...';
+    await requestCopyAccessToken('select_account');
+
+    statusEl.textContent = '⏳ Đang tự tạo folder "' + folderName + '" giống folder gốc...';
+    const folderRes = await copyApiFetch(
+      'https://www.googleapis.com/drive/v3/files?fields=id',
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' }) }
+    );
+    const folder = await folderRes.json();
+
+    statusEl.textContent = '⏳ Đang tự chia sẻ "Bất kỳ ai có đường liên kết"...';
+    await copyApiFetch(
+      'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(folder.id) + '/permissions',
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' }) }
+    );
+
+    const folderLink = 'https://drive.google.com/drive/folders/' + folder.id;
+    wizardFolderLink.value = folderLink;
+    const fcd = document.getElementById('wizardFolderCreatedDone'); if (fcd) fcd.checked = true;
+    const fsd = document.getElementById('wizardFolderSharedDone'); if (fsd) fsd.checked = true;
+
+    accountWizardData.label = label;
+    accountWizardData.folderLink = folderLink;
+    accountWizardData.folderOk = true;
+    accountWizardData.videoCount = 0;
+
+    const copyBox = document.getElementById('wizardCopyBox');
+    if (copyBox) { copyBox.classList.remove('hidden'); populateFolderSyncSelects(); }
+
+    if (hasSource) {
+      const destAcc = { label: label, apiKey: accountWizardData.apiKey, folderLink: folderLink };
+      await runFolderSyncUI(accounts[sourceIdx], destAcc, statusEl, null);
+    } else {
+      statusEl.textContent = '✓ Đã tự tạo & chia sẻ folder "' + folderName + '". Chưa có tài khoản nguồn nào để copy - có thể copy sau ở ô "Copy video từ" bên dưới.';
+    }
+
+    try {
+      const files = await listFolderFiles(accountWizardData.apiKey, extractFolderId(folderLink));
+      accountWizardData.videoCount = files.filter(isVideoFile).length;
+    } catch (e) { /* folder vừa tạo, key mới có thể cần vài giây để lập chỉ mục - bỏ qua */ }
+    wizardFolderStatus.textContent = '✓ OK — folder tự tạo, hiện có ' + accountWizardData.videoCount + ' video.';
+    wizardStep5Next.disabled = false;
+  } catch (err) {
+    statusEl.textContent = '✗ Lỗi: ' + (err.message || String(err));
+  } finally {
+    this.disabled = false;
   }
 });
 
@@ -1762,6 +1851,7 @@ function populateFolderSyncSelects() {
   }
 
   fill(document.getElementById('wizardCopySourceSelect'), 'Chưa có tài khoản nào để copy từ đó');
+  fill(document.getElementById('wizardQuickSourceSelect'), 'Chưa có tài khoản nào để copy từ đó');
 }
 
 async function runFolderSyncUI(sourceAcc, destAcc, statusEl, startBtn) {

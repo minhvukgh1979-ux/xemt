@@ -221,6 +221,53 @@
             <div class="wizard-panel hidden" data-panel="5">
               <div class="wizard-number">5</div>
               <h3>Tạo & chia sẻ Folder Drive cho account mới</h3>
+
+              <div class="wizard-mini-help test-user-note">
+                🧪 <b>Lưu ý "Test user":</b> tính năng tạo folder tự động và
+                copy video ở dưới đây dùng chung 1 cấu hình đăng nhập Google
+                (OAuth) của app. Nếu Google báo lỗi <i>"Access blocked"</i> /
+                <i>"App chưa xác minh - không cho phép"</i> khi đăng nhập
+                bằng <b id="wizardTestUserAccountLabel"></b>, hãy đăng nhập
+                Google Cloud Console bằng <b>tài khoản chủ app (tài khoản
+                gốc)</b> → mở <b>OAuth consent screen</b> → mục
+                <b>Test users</b> → <b>Add users</b> → dán email
+                <b id="wizardTestUserAccountLabel2"></b> vào → <b>Save</b>,
+                rồi quay lại thử đăng nhập lần nữa. Bỏ qua bước này nếu bạn
+                định dùng cách thủ công (không cần đăng nhập) ở bên dưới.
+                <div>
+                  <button id="wizardOpenConsentBtn" class="btn btn-sm api-link-btn" type="button">↗ Mở OAuth consent screen</button>
+                </div>
+              </div>
+
+              <div class="wizard-mini-help quick-auto-box">
+                <h4>⚡ Cách nhanh: tự tạo folder giống gốc + tự đồng bộ</h4>
+                <p>
+                  Bỏ qua toàn bộ thao tác thủ công bên dưới - app tự tạo 1
+                  folder mới trên Drive của <b id="wizardQuickAccountLabel"></b>,
+                  tự chia sẻ "Bất kỳ ai có đường liên kết - Người xem", rồi
+                  tự copy toàn bộ video (kèm phụ đề) từ tài khoản nguồn bạn
+                  chọn sang folder đó - xong tự điền link + tự tick 2 ô xác
+                  nhận bên dưới giúp bạn.
+                </p>
+                <label for="wizardQuickFolderName">Tên folder mới sẽ tạo:</label>
+                <input id="wizardQuickFolderName" type="text" placeholder="Vd. Phim" value="Phim">
+                <label for="wizardQuickSourceSelect">Copy video từ (tài khoản nguồn, có thể bỏ qua):</label>
+                <select id="wizardQuickSourceSelect"></select>
+                <div class="wizard-note">
+                  ⓘ Nhớ nhập <b>"Tên hiển thị"</b> ở phần thủ công bên dưới
+                  trước khi bấm nút này.
+                </div>
+                <button id="wizardQuickAutoBtn" class="btn btn-primary" type="button">⚡ Tự tạo folder + Đồng bộ ngay</button>
+                <div id="wizardQuickStatus" class="wizard-status"></div>
+                <div class="wizard-note">
+                  🔐 Google sẽ hiện màn hình chọn tài khoản - hãy chọn đúng
+                  tài khoản <b>MỚI</b> (<b id="wizardQuickAccountLabel2"></b>)
+                  và bấm Cho phép.
+                </div>
+              </div>
+
+              <div class="wizard-divider">— hoặc tự làm thủ công —</div>
+
               <p>Tạo 1 folder Drive mới ngay trên Drive của <b id="wizardFolderAccountLabel"></b> để chứa video của account này.</p>
               <button id="wizardOpenDriveBtn" class="btn api-link-btn" type="button">↗ Mở Google Drive</button>
               <div class="wizard-mini-help">

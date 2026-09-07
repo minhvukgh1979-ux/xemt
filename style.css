@@ -919,3 +919,11 @@ kbd {
 .folder-sync-tool select { display:block; width:100%; max-width:none; box-sizing:border-box; margin-top:4px; }
 .folder-sync-tool .btn { margin-top:12px; }
 #wizardCopyBox select { display:block; width:100%; max-width:none; box-sizing:border-box; margin:6px 0; }
+
+/* Bước 5: lưu ý Test user + khối "Cách nhanh" tự tạo folder + tự đồng bộ */
+.test-user-note { border:1px solid #4a3a1c; background:rgba(255,196,0,.06); }
+.quick-auto-box { border:1px solid #2c4a3a; background:rgba(0,200,120,.06); }
+.quick-auto-box h4 { margin:0 0 6px; font-size:13px; color:var(--text); }
+.quick-auto-box select, .quick-auto-box input[type="text"] { display:block; width:100%; max-width:none; box-sizing:border-box; margin:6px 0; }
+.quick-auto-box .btn { margin-top:10px; }
+.wizard-divider { text-align:center; color:var(--text-dim); font-size:11px; margin:16px 0; opacity:.7; }

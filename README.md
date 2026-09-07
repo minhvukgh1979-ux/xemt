@@ -147,10 +147,26 @@ Giao diện đã được làm lại đầy đủ hơn:
 2. Mở Google Cloud và **tạo/chọn Project bằng chính account mới**.
 3. Bật **Google Drive API** trong Project đó.
 4. Tạo **API Key** trong Credentials của Project đó và dán vào wizard.
-5. **Tạo 1 folder Drive mới**, chia sẻ "Bất kỳ ai có đường liên kết" (chọn
-   quyền Người xem hoặc Người chỉnh sửa - xem chi tiết bên dưới), dán link
-   vào wizard và bấm **Kiểm tra folder**.
+5. **Tạo folder Drive**. Bước này có 2 cách:
+   - **Cách nhanh** (đầu bước 5): bấm **⚡ Tự tạo folder + Đồng bộ ngay** -
+     app tự đăng nhập vào chính account mới, tự tạo 1 folder (mặc định tên
+     "Phim", giống cách đặt của folder gốc), tự chia sẻ "Bất kỳ ai có đường
+     liên kết - Người xem", rồi tự copy toàn bộ video còn thiếu từ 1 account
+     nguồn bạn chọn sang - không cần thao tác thủ công trên Google Drive.
+   - **Cách thủ công** (bên dưới): tự tạo 1 folder Drive mới, chia sẻ "Bất
+     kỳ ai có đường liên kết" (chọn quyền Người xem hoặc Người chỉnh sửa -
+     xem chi tiết bên dưới), dán link vào wizard và bấm **Kiểm tra folder**.
+
+   Cả 2 cách đều cần bấm **Kiểm tra folder** (cách nhanh tự làm giúp) trước
+   khi qua bước 6.
 6. Xem lại thông tin → **Thêm account này vào app**.
+
+Cách nhanh ở bước 5 và ô "Copy video từ..." dùng chung 1 cấu hình đăng nhập
+Google (OAuth) của app. Nếu Google báo lỗi *"Access blocked"* khi đăng nhập
+bằng account mới, cần mở Google Cloud Console **bằng account chủ app (tài
+khoản gốc)** → **OAuth consent screen** → **Test users** → **Add users** →
+thêm email của account mới vào, rồi thử đăng nhập lại (wizard có sẵn nút
+mở nhanh trang này).
 
 App không copy API Key của account cũ. Mỗi account có cấu hình `googleAccount + apiKey + folderLink` riêng.
 
