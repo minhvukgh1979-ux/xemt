@@ -905,3 +905,17 @@ kbd {
 .wizard-mini-help li { margin:4px 0; }
 
 .account-row input[type="email"] { width:100%; box-sizing:border-box; }
+
+/* Đồng bộ folder giữa các tài khoản */
+.folder-sync-tool {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #3b4656;
+  border-radius: 14px;
+  background: rgba(20,27,36,.98);
+}
+.folder-sync-tool h3 { margin:0 0 6px; font-size:14px; }
+.folder-sync-tool label { display:block; margin-top:10px; font-size:12px; color:var(--text-dim); }
+.folder-sync-tool select { display:block; width:100%; max-width:none; box-sizing:border-box; margin-top:4px; }
+.folder-sync-tool .btn { margin-top:12px; }
+#wizardCopyBox select { display:block; width:100%; max-width:none; box-sizing:border-box; margin:6px 0; }

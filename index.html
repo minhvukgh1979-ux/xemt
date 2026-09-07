@@ -138,6 +138,29 @@
 
           <button id="addAccountBtn" class="btn btn-primary btn-block" type="button" tabindex="0">➕ Thêm tài khoản mới</button>
 
+          <div class="folder-sync-tool">
+            <h3>🔁 Đồng bộ folder giữa các tài khoản</h3>
+            <p class="hint">
+              Copy toàn bộ video (và phụ đề) còn thiếu từ 1 tài khoản
+              (nguồn) sang tài khoản khác (đích) - copy thẳng trên server
+              Google, không tải về máy nên không tốn băng thông. Cần ít
+              nhất 2 tài khoản đã thêm ở trên mới dùng được. Chỉ copy file
+              nào ĐÍCH chưa có (theo tên) - chạy lại nhiều lần vẫn an toàn.
+            </p>
+            <label for="folderSyncSourceSelect">Nguồn (lấy video từ đây):</label>
+            <select id="folderSyncSourceSelect"></select>
+            <label for="folderSyncDestSelect">Đích (copy video vào đây):</label>
+            <select id="folderSyncDestSelect"></select>
+            <button id="folderSyncStartBtn" class="btn api-link-btn" type="button">▶ Bắt đầu đồng bộ</button>
+            <div id="folderSyncStatus" class="wizard-status"></div>
+            <div class="wizard-note">
+              🔐 Ở bước copy, Google sẽ hiện màn hình chọn tài khoản - hãy
+              chọn ĐÚNG tài khoản ĐÍCH (không phải nguồn) và bấm Cho phép,
+              vì việc ghi file vào folder đích bắt buộc phải đăng nhập đúng
+              tài khoản sở hữu folder đó.
+            </div>
+          </div>
+
           <div id="accountWizard" class="account-wizard hidden">
             <div class="wizard-head">
               <div>
@@ -227,6 +250,17 @@
               <input id="wizardFolderLink" type="url" placeholder="https://drive.google.com/drive/folders/...">
               <button id="wizardCheckFolderBtn" class="btn api-link-btn" type="button">🔍 Kiểm tra folder</button>
               <div id="wizardFolderStatus" class="wizard-status"></div>
+
+              <div id="wizardCopyBox" class="wizard-mini-help hidden">
+                Folder này còn trống hoặc thiếu phim? Có thể copy thẳng
+                toàn bộ video từ 1 tài khoản đã có sẵn (vd. tài khoản gốc)
+                sang đây - copy trên server Google, không cần tải xuống.
+                <label for="wizardCopySourceSelect">Copy video từ:</label>
+                <select id="wizardCopySourceSelect"></select>
+                <button id="wizardCopyStartBtn" class="btn api-link-btn" type="button">▶ Copy vào folder này</button>
+                <div id="wizardCopyStatus" class="wizard-status"></div>
+              </div>
+
               <button id="wizardStep5Next" class="btn btn-primary" type="button" disabled>Tiếp tục →</button>
             </div>
 
