@@ -1437,6 +1437,9 @@ function openAccountWizard() {
   const copyStatus = document.getElementById('wizardCopyStatus'); if (copyStatus) copyStatus.textContent = '';
   const quickName = document.getElementById('wizardQuickFolderName'); if (quickName) quickName.value = 'Phim';
   const quickStatus = document.getElementById('wizardQuickStatus'); if (quickStatus) quickStatus.textContent = '';
+  const consentDone = document.getElementById('wizardConsentOpenedDone'); if (consentDone) consentDone.checked = false;
+  const testUserDone = document.getElementById('wizardTestUserAddedDone'); if (testUserDone) testUserDone.checked = false;
+  const testLoginStatus = document.getElementById('wizardTestLoginStatus'); if (testLoginStatus) testLoginStatus.textContent = '';
   wizardStep5Next.disabled = true;
   wizardShowStep(1);
   accountWizard.classList.remove('hidden');
@@ -1460,7 +1463,7 @@ document.getElementById('wizardStep1Next')?.addEventListener('click', function()
   accountWizardData.googleAccount = email;
   wizardAccountLabel.textContent = email;
   wizardFolderAccountLabel.textContent = email;
-  ['wizardTestUserAccountLabel', 'wizardTestUserAccountLabel2', 'wizardQuickAccountLabel', 'wizardQuickAccountLabel2'].forEach(function (id) {
+  ['wizardTestUserAccountLabel', 'wizardTestUserAccountLabel2', 'wizardTestUserAccountLabel3', 'wizardQuickAccountLabel', 'wizardQuickAccountLabel2'].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) el.textContent = email;
   });
@@ -1516,6 +1519,29 @@ document.getElementById('wizardOpenConsentBtn')?.addEventListener('click', funct
     ? 'https://console.cloud.google.com/apis/credentials/consent?project=' + encodeURIComponent(projectNumber)
     : 'https://console.cloud.google.com/apis/credentials/consent';
   window.open(url, '_blank', 'noopener,noreferrer');
+});
+
+document.getElementById('wizardTestLoginBtn')?.addEventListener('click', async function () {
+  const statusEl = document.getElementById('wizardTestLoginStatus');
+  this.disabled = true;
+  if (statusEl) statusEl.textContent = '⏳ Đang mở màn hình đăng nhập Google - hãy chọn đúng account ' + (accountWizardData.googleAccount || 'mới') + '...';
+  try {
+    await requestCopyAccessToken('select_account');
+    if (statusEl) statusEl.textContent = '✓ Đăng nhập thành công! Account này đã dùng được nút "⚡ Tự tạo folder + Đồng bộ ngay" và "Copy video từ" bên dưới rồi.';
+  } catch (err) {
+    const msg = (err && err.message) || String(err);
+    if (statusEl) {
+      if (/access_denied|disallowed|blocked/i.test(msg)) {
+        statusEl.textContent = '✗ Vẫn bị chặn (access_denied). Hãy kiểm tra lại: (1) Bước B mở ĐÚNG project bằng ĐÚNG account gốc, (2) Bước C đã Save đúng email ' + (accountWizardData.googleAccount || '') + ' vào Test users chưa. Google có thể mất 1-2 phút để cập nhật - đợi rồi bấm kiểm tra lại.';
+      } else if (/popup_closed|closed the popup|user did not/i.test(msg)) {
+        statusEl.textContent = '⚠ Cửa sổ đăng nhập bị đóng trước khi hoàn tất - hãy bấm lại nút này, chọn tài khoản và bấm Cho phép đến cùng.';
+      } else {
+        statusEl.textContent = '✗ Lỗi: ' + msg + ' - hãy thử bấm lại, hoặc kiểm tra lại các Bước A-C ở trên.';
+      }
+    }
+  } finally {
+    this.disabled = false;
+  }
 });
 
 document.getElementById('wizardCheckFolderBtn')?.addEventListener('click', async function() {

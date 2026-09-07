@@ -223,19 +223,60 @@
               <h3>Tạo & chia sẻ Folder Drive cho account mới</h3>
 
               <div class="wizard-mini-help test-user-note">
-                🧪 <b>Lưu ý "Test user":</b> tính năng tạo folder tự động và
-                copy video ở dưới đây dùng chung 1 cấu hình đăng nhập Google
-                (OAuth) của app. Nếu Google báo lỗi <i>"Access blocked"</i> /
-                <i>"App chưa xác minh - không cho phép"</i> khi đăng nhập
-                bằng <b id="wizardTestUserAccountLabel"></b>, hãy đăng nhập
-                Google Cloud Console bằng <b>tài khoản chủ app (tài khoản
-                gốc)</b> → mở <b>OAuth consent screen</b> → mục
-                <b>Test users</b> → <b>Add users</b> → dán email
-                <b id="wizardTestUserAccountLabel2"></b> vào → <b>Save</b>,
-                rồi quay lại thử đăng nhập lần nữa. Bỏ qua bước này nếu bạn
-                định dùng cách thủ công (không cần đăng nhập) ở bên dưới.
-                <div>
+                <h4>🧪 Bắt buộc kiểm tra trước: "Test user" (OAuth)</h4>
+                <p>
+                  Tính năng "⚡ Tự tạo folder", "Copy video từ" và "Đồng bộ
+                  Drive" đều cần đăng nhập Google (OAuth) qua 1 cấu hình
+                  dùng chung của app. Cấu hình này đang ở chế độ
+                  <b>Testing</b>, nên account MỚI (khác account đã tạo ra
+                  app từ đầu) <b>bắt buộc phải được thêm vào Test users</b>
+                  trước, nếu không sẽ gặp lỗi <i>"Đã chặn quyền truy cập...
+                  access_denied"</i>. Làm đủ 4 bước A-D dưới đây 1 lần cho
+                  mỗi account mới là xong, không cần lặp lại lần sau.
+                </p>
+
+                <div class="wizard-mini-help">
+                  <b>Bước A · Xác định tài khoản gốc sở hữu app</b>
+                  <p>
+                    Đây là account Google đã tạo ra Project/OAuth Client
+                    của app này (account bạn dùng đầu tiên khi làm app -
+                    KHÔNG phải account <b id="wizardTestUserAccountLabel3"></b>
+                    đang thêm mới). Nếu không nhớ, thử đăng nhập Cloud
+                    Console lần lượt bằng các account nghi ngờ - account
+                    nào mở được đúng trang ở Bước B và thấy tên app quen
+                    thuộc thì đúng là account đó.
+                  </p>
+                </div>
+
+                <div class="wizard-mini-help">
+                  <b>Bước B · Mở OAuth consent screen (đăng nhập bằng account gốc)</b>
                   <button id="wizardOpenConsentBtn" class="btn btn-sm api-link-btn" type="button">↗ Mở OAuth consent screen</button>
+                  <label class="wizard-check"><input id="wizardConsentOpenedDone" type="checkbox"> Tôi đã mở đúng trang, bằng đúng account gốc</label>
+                </div>
+
+                <div class="wizard-mini-help">
+                  <b>Bước C · Thêm account mới vào Test users</b>
+                  <p>
+                    Trên trang vừa mở, cuộn xuống mục <b>"Test users"</b> →
+                    bấm <b>"+ ADD USERS"</b> → dán email
+                    <b id="wizardTestUserAccountLabel"></b> vào ô → bấm
+                    <b>Save</b>.
+                  </p>
+                  <label class="wizard-check"><input id="wizardTestUserAddedDone" type="checkbox"> Tôi đã thêm email này vào Test users và bấm Save</label>
+                </div>
+
+                <div class="wizard-mini-help">
+                  <b>Bước D · Kiểm tra đăng nhập thử</b>
+                  <p>
+                    Bấm nút dưới đây, chọn đúng account
+                    <b id="wizardTestUserAccountLabel2"></b> khi Google
+                    hiện màn hình chọn tài khoản, rồi bấm <b>Cho phép</b>.
+                    App sẽ báo ngay kết quả - nếu vẫn lỗi, làm lại đúng
+                    Bước B-C rồi bấm kiểm tra lại (có thể mất 1-2 phút để
+                    Google cập nhật), lặp lại tới khi báo ✓ thành công.
+                  </p>
+                  <button id="wizardTestLoginBtn" class="btn api-link-btn" type="button">🔍 Kiểm tra đăng nhập ngay</button>
+                  <div id="wizardTestLoginStatus" class="wizard-status"></div>
                 </div>
               </div>
 
