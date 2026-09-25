@@ -27,7 +27,7 @@
     <div class="toolbar">
       <div class="search-row">
         <span class="search-icon" aria-hidden="true">🔍</span>
-        <input id="searchInput" type="text" tabindex="0" placeholder="Tìm video theo tên..." />
+        <input id="searchInput" type="text" tabindex="0" placeholder="Tìm video/nhạc theo tên..." />
         <button id="clearSearchBtn" class="clear-search-btn hidden" type="button" title="Xoá tìm kiếm">✕</button>
       </div>
       <select id="sortSelect" tabindex="0">
@@ -72,6 +72,11 @@
       <video id="videoPlayer" playsinline referrerpolicy="origin">
         <track id="subtitleTrack" kind="subtitles" srclang="vi" label="Phụ đề" default>
       </video>
+
+      <div id="audioCover" class="audio-cover hidden">
+        <div class="audio-cover-icon">🎵</div>
+        <div id="audioCoverTitle" class="audio-cover-title"></div>
+      </div>
 
       <button id="bigPlayBtn" class="big-play-btn" tabindex="0" title="Phát/Tạm dừng">▶</button>
 

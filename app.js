@@ -108,6 +108,8 @@ const bigPlayBtn = document.getElementById('bigPlayBtn');
 const playerError = document.getElementById('playerError');
 const backBtn = document.getElementById('backBtn');
 const playerTitle = document.getElementById('playerTitle');
+const audioCover = document.getElementById('audioCover');
+const audioCoverTitle = document.getElementById('audioCoverTitle');
 const shortcutsBtn = document.getElementById('shortcutsBtn');
 const seekBar = document.getElementById('seekBar');
 const timeCurrent = document.getElementById('timeCurrent');
@@ -880,6 +882,7 @@ function formatTime(sec) {
 // ---------------- Nhận diện loại file ----------------
 
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v', 'mkv'];
+const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'wav', 'flac', 'aac', 'wma', 'opus', 'oga'];
 const SUBTITLE_EXTENSIONS = ['srt', 'vtt', 'ass', 'ssa'];
 
 function getExtension(name) {
@@ -894,6 +897,17 @@ function getBaseName(name) {
 function isVideoFile(file) {
   if (file.mimeType && file.mimeType.indexOf('video/') === 0) return true;
   return VIDEO_EXTENSIONS.includes(getExtension(file.name));
+}
+
+// File nhạc/âm thanh (mp3, m4a, wav, flac...) - phát được y như video,
+// chỉ khác là không có hình, dùng icon nốt nhạc thay thế.
+function isAudioFile(file) {
+  if (file.mimeType && file.mimeType.indexOf('audio/') === 0) return true;
+  return AUDIO_EXTENSIONS.includes(getExtension(file.name));
+}
+
+function isPlayableMediaFile(file) {
+  return isVideoFile(file) || isAudioFile(file);
 }
 
 function isSubtitleFile(file) {
@@ -1081,7 +1095,7 @@ async function fetchFolderVideos(accounts) {
       continue;
     }
 
-    const videoFiles = files.filter(isVideoFile);
+    const videoFiles = files.filter(isPlayableMediaFile);
     const subtitleFiles = files.filter(isSubtitleFile);
     const subtitleByBase = {};
     subtitleFiles.forEach(function (f) { subtitleByBase[getBaseName(f.name)] = f; });
@@ -1104,6 +1118,7 @@ async function fetchFolderVideos(accounts) {
           key: key,
           originalTitle: baseName,
           mimeType: f.mimeType || '',
+          mediaType: isAudioFile(f) ? 'audio' : 'video',
           thumbnail: f.thumbnailLink || null,
           createdTime: f.createdTime || null,
           sources: [source]
@@ -1569,7 +1584,7 @@ document.getElementById('wizardCheckFolderBtn')?.addEventListener('click', async
   try {
     const folderId = extractFolderId(folder);
     const files = await listFolderFiles(accountWizardData.apiKey, folderId);
-    const count = files.filter(isVideoFile).length;
+    const count = files.filter(isPlayableMediaFile).length;
     accountWizardData.label = label;
     accountWizardData.folderLink = folder;
     accountWizardData.folderOk = true;
@@ -1645,7 +1660,7 @@ document.getElementById('wizardQuickAutoBtn')?.addEventListener('click', async f
 
     try {
       const files = await listFolderFiles(accountWizardData.apiKey, extractFolderId(folderLink));
-      accountWizardData.videoCount = files.filter(isVideoFile).length;
+      accountWizardData.videoCount = files.filter(isPlayableMediaFile).length;
     } catch (e) { /* folder vừa tạo, key mới có thể cần vài giây để lập chỉ mục - bỏ qua */ }
     wizardFolderStatus.textContent = '✓ OK — folder tự tạo, hiện có ' + accountWizardData.videoCount + ' video.';
     wizardStep5Next.disabled = false;
@@ -1674,7 +1689,7 @@ document.getElementById('wizardCopyStartBtn')?.addEventListener('click', async f
   // Sau khi copy xong, quét lại folder đích để cập nhật số video hiển thị ở bước tóm tắt.
   try {
     const files = await listFolderFiles(accountWizardData.apiKey, extractFolderId(accountWizardData.folderLink));
-    accountWizardData.videoCount = files.filter(isVideoFile).length;
+    accountWizardData.videoCount = files.filter(isPlayableMediaFile).length;
     wizardFolderStatus.textContent = '✓ OK — hiện có ' + accountWizardData.videoCount + ' video trong folder.';
   } catch (e) { /* bỏ qua - không quét lại được thì vẫn giữ số cũ */ }
 });
@@ -1795,12 +1810,12 @@ function renderAccountRows() {
       try {
         const folderId = extractFolderId(folderLink);
         const files = await listFolderFiles(apiKey, folderId);
-        const videoCount = files.filter(isVideoFile).length;
+        const videoCount = files.filter(isPlayableMediaFile).length;
         if (videoCount > 0) {
           checkStatus.textContent = '✓ OK - tìm thấy ' + videoCount + ' video.';
           checkStatus.className = 'account-check-status ok';
         } else {
-          checkStatus.textContent = '⚠ Kết nối được, nhưng folder chưa có video nào.';
+          checkStatus.textContent = '⚠ Kết nối được, nhưng folder chưa có video/nhạc nào.';
           checkStatus.className = 'account-check-status warn';
         }
       } catch (err) {
@@ -2062,13 +2077,13 @@ function applyFilters() {
 
   if (videoCountBadge) {
     videoCountBadge.classList.toggle('hidden', allVideos.length === 0);
-    videoCountBadge.textContent = allVideos.length + ' video';
+    videoCountBadge.textContent = allVideos.length + ' mục';
   }
 
   if (allVideos.length === 0) {
-    statusMsg.textContent = 'Không thấy video nào trong folder. Kiểm tra lại link folder và quyền chia sẻ.';
+    statusMsg.textContent = 'Không thấy video/nhạc nào trong folder. Kiểm tra lại link folder và quyền chia sẻ.';
   } else {
-    statusMsg.textContent = list.length + ' / ' + allVideos.length + ' video.';
+    statusMsg.textContent = list.length + ' / ' + allVideos.length + ' mục (video + nhạc).';
   }
 }
 
@@ -2106,6 +2121,13 @@ function renderContinueWatching(term) {
     if (video.thumbnail) { img.src = video.thumbnail; }
     else { img.style.background = '#37474f'; }
     thumbWrap.appendChild(img);
+    if (video.mediaType === 'audio' && !video.thumbnail) {
+      thumbWrap.classList.add('thumb-wrap-audio');
+      const audioIcon = document.createElement('span');
+      audioIcon.className = 'audio-note-icon';
+      audioIcon.textContent = '🎵';
+      thumbWrap.appendChild(audioIcon);
+    }
 
     const sliver = document.createElement('div');
     sliver.className = 'progress-sliver';
@@ -2139,7 +2161,7 @@ function renderVideos(videos) {
   if (videos.length === 0 && allVideos.length > 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.innerHTML = '<span class="empty-emoji">🔍</span>Không tìm thấy video phù hợp.';
+    empty.innerHTML = '<span class="empty-emoji">🔍</span>Không tìm thấy video/nhạc phù hợp.';
     videoGrid.appendChild(empty);
     return;
   }
@@ -2161,6 +2183,9 @@ function renderVideos(videos) {
       thumbWrap.appendChild(check);
     }
 
+    const isAudio = video.mediaType === 'audio';
+    if (isAudio) thumbWrap.classList.add('thumb-wrap-audio');
+
     const img = document.createElement('img');
     img.className = 'thumb';
     img.alt = video.title;
@@ -2171,6 +2196,13 @@ function renderVideos(videos) {
       img.style.background = '#37474f';
     }
     thumbWrap.appendChild(img);
+
+    if (isAudio && !video.thumbnail) {
+      const audioIcon = document.createElement('span');
+      audioIcon.className = 'audio-note-icon';
+      audioIcon.textContent = '🎵';
+      thumbWrap.appendChild(audioIcon);
+    }
 
     if (video.sources.some(function (s) { return s.subtitleFileId; })) {
       const ccBadge = document.createElement('span');
@@ -2471,6 +2503,11 @@ async function openPlayer(rawVideo) {
   videoPlayer.playbackRate = SPEEDS[speedIndex];
   speedBtn.textContent = SPEEDS[speedIndex] + 'x';
   if (pipBtn) pipBtn.classList.toggle('hidden', !document.pictureInPictureEnabled);
+  if (audioCover) {
+    const isAudio = video.mediaType === 'audio';
+    audioCover.classList.toggle('hidden', !isAudio);
+    if (isAudio && audioCoverTitle) audioCoverTitle.textContent = video.title;
+  }
   showScreen('player');
   showControls();
 
