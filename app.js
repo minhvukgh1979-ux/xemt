@@ -66,6 +66,7 @@ const LS_KEY_ACCOUNTS_BACKUP = 'drivetv_accounts_backup'; // bản sao dự phò
 const LS_KEY_META = 'drivetv_meta';         // {key: {title, favorite, hidden, note, watchedManual}}
 const LS_KEY_PROGRESS = 'drivetv_progress'; // {key: {time, duration, updatedAt}}
 const LS_KEY_VIEW = 'drivetv_view';         // 'grid' | 'list'
+const LS_KEY_MEDIA_FILTER = 'drivetv_media_filter'; // 'all' | 'video' | 'audio'
 
 // ---------------- DOM refs ----------------
 
@@ -87,6 +88,7 @@ const clearSearchBtn = document.getElementById('clearSearchBtn');
 const sortSelect = document.getElementById('sortSelect');
 const refreshBtn = document.getElementById('refreshBtn');
 const tabsEl = document.getElementById('tabs');
+const mediaSwitchEl = document.getElementById('mediaSwitch');
 const videoGrid = document.getElementById('videoGrid');
 const statusMsg = document.getElementById('statusMsg');
 const videoCountBadge = document.getElementById('videoCountBadge');
@@ -137,6 +139,10 @@ const toastContainer = document.getElementById('toastContainer');
 
 let allVideos = [];        // dữ liệu gốc quét từ Drive
 let currentTab = 'all';
+let currentMediaFilter = (function () {
+  const saved = localStorage.getItem(LS_KEY_MEDIA_FILTER);
+  return saved === 'all' || saved === 'video' || saved === 'audio' ? saved : 'video';
+})(); // 'all' | 'video' (phim, mặc định) | 'audio' (nhạc)
 let currentSubtitleUrl = null;
 let currentVideo = null;
 let currentSourceIndex = -1; // vị trí trong video.sources đang phát (để nhảy tài khoản khi lỗi)
@@ -2012,6 +2018,20 @@ tabsEl.addEventListener('click', function (e) {
   applyFilters();
 });
 
+if (mediaSwitchEl) {
+  Array.from(mediaSwitchEl.querySelectorAll('.media-switch-btn')).forEach(function (t) {
+    t.classList.toggle('active', t.getAttribute('data-media') === currentMediaFilter);
+  });
+  mediaSwitchEl.addEventListener('click', function (e) {
+    const btn = e.target.closest('.media-switch-btn');
+    if (!btn) return;
+    currentMediaFilter = btn.getAttribute('data-media');
+    localStorage.setItem(LS_KEY_MEDIA_FILTER, currentMediaFilter);
+    Array.from(mediaSwitchEl.querySelectorAll('.media-switch-btn')).forEach(function (t) { t.classList.toggle('active', t === btn); });
+    applyFilters();
+  });
+}
+
 sortSelect.addEventListener('change', applyFilters);
 searchInput.addEventListener('input', function () {
   clearSearchBtn.classList.toggle('hidden', !searchInput.value);
@@ -2052,6 +2072,9 @@ function applyFilters() {
   else if (currentTab === 'hidden') list = list.filter(function (v) { return v.hidden; });
   else list = list.filter(function (v) { return !v.hidden; });
 
+  if (currentMediaFilter === 'video') list = list.filter(function (v) { return v.mediaType !== 'audio'; });
+  else if (currentMediaFilter === 'audio') list = list.filter(function (v) { return v.mediaType === 'audio'; });
+
   if (term) {
     list = list.filter(function (v) { return normalizeForSearch(v.title).includes(term); });
   }
@@ -2083,7 +2106,8 @@ function applyFilters() {
   if (allVideos.length === 0) {
     statusMsg.textContent = 'Không thấy video/nhạc nào trong folder. Kiểm tra lại link folder và quyền chia sẻ.';
   } else {
-    statusMsg.textContent = list.length + ' / ' + allVideos.length + ' mục (video + nhạc).';
+    const mediaLabel = currentMediaFilter === 'video' ? ' (phim)' : currentMediaFilter === 'audio' ? ' (nhạc)' : ' (video + nhạc)';
+    statusMsg.textContent = list.length + ' / ' + allVideos.length + ' mục' + mediaLabel + '.';
   }
 }
 
@@ -2091,7 +2115,7 @@ function applyFilters() {
 
 function renderContinueWatching(term) {
   if (!continueSection || !continueRow) return;
-  if (term || currentTab !== 'all' || bulkModeActive) {
+  if (term || currentTab !== 'all' || currentMediaFilter !== 'all' || bulkModeActive) {
     continueSection.classList.add('hidden');
     return;
   }
